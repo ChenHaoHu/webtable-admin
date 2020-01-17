@@ -7,6 +7,4 @@
 ## vue-admin-template
 
 
-
-
 ![](\logo\logo2.jpg)
