@@ -2,80 +2,66 @@
 import Layout from "@/layout";
 import "nprogress/nprogress.css"; // progress bar style
 
-
-
 const getDefaultState = () => {
+  var router_default = [
+    {
+      path: "/login",
+      component: () => import("@/views/login/index"),
+      hidden: true
+    },
 
-    const constantRoutes = [
+    {
+      path: "/404",
+      component: () => import("@/views/404"),
+      hidden: true
+    },
+
+    {
+      path: "/",
+      component: Layout,
+      redirect: "/dashboard",
+      children: [
         {
-          path: '/login',
-          component: () => import('@/views/login/index'),
-          hidden: true
-        },
-      
-        {
-          path: '/404',
-          component: () => import('@/views/404'),
-          hidden: true
-        },
-      
-        {
-          path: '/',
-          component: Layout,
-          redirect: '/dashboard',
-          children: [{
-            path: 'dashboard',
-            name: 'Dashboard',
-            component: () => import('@/views/dashboard/index'),
-            meta: { title: 'Dashboard', icon: 'dashboard' }
-          }]
-        },
-        {
-          path: '/',
-          component: Layout,
-          redirect: '/aa',
-          children: [{
-            path: 'aa',
-            name: 'aa',
-            component: () => import('@/views/dashboard/index'),
-            meta: { title: 'aa', icon: 'dashboard' }
-          }]
-        },
-      
-        {
-          path: 'external-link',
-          component: Layout,
-          children: [
-            {
-              path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-              meta: { title: 'External Link', icon: 'link' }
-            }
-          ]
-        },
-      
-        // 404 page must be placed at the end !!!
-        // { path: '*', redirect: '/404', hidden: true }
+          path: "dashboard",
+          name: "Dashboard",
+          component: () => import("@/views/dashboard/index"),
+          meta: { title: "Dashboard", icon: "dashboard" }
+        }
       ]
-    return {
-        routers: "",
-        addRouters: [],
-        constantRouterMap:constantRoutes
+    },
+    {
+      path: "external-link",
+      component: Layout,
+      children: [
+        {
+          path: "https://panjiachen.github.io/vue-element-admin-site/#/",
+          meta: { title: "External Link", icon: "link" }
+        }
+      ]
     }
-  }
-  
-  const state = getDefaultState()
+
+    // 404 page must be placed at the end !!!
+    // { path: '*', redirect: '/404', hidden: true }
+  ];
+  return {
+    routers: "",
+    addRouters: [],
+    router_default:router_default
+  };
+};
+
+const state = getDefaultState();
 
 const mutations = {
   SET_ROUTERS: (state, routers) => {
     state.addRouters = routers;
-    state.routers =  state.constantRouterMap.concat(routers);
+    state.routers = state.router_default.concat(routers);
   }
 };
 
 const actions = {
-  GenerateRoutes({ commit }, data) {
+  GenerateRoutes({ commit }) {
     return new Promise(resolve => {
-      const { roles } = data;
       var asyncRouterMap = [
         {
           path: "/example",
