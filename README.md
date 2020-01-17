@@ -7,4 +7,4 @@
 ## vue-admin-template
 
 
-![](\logo\logo2.jpg)
+![](https://github.com/ChenHaoHu/webtable-admin/logo/logo2.jpg)
