@@ -137,7 +137,6 @@ const actions = {
       // ];
 
       var map = {
-       "/form/index":() => import("@/views/form/index"),
        "/table/index":() => import("@/views/table/index"),
        "/wadmin/permission/index":() => import("@/views/wadmin/permission/index"),
        "/wadmin/member/index":() => import("@/views/wadmin/member/index"),
