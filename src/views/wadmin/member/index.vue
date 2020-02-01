@@ -1,18 +1,27 @@
 <template>
   <div class="app-container">
-    数据表管理
+   memeber management
   </div>
 </template>
 
 <script>
-import { getList } from '@/api/table'
-
 export default {
-  
   data() {
     return {
-    
+      form: {
+       
+      }
     }
   },
+  methods: {
+   
+  }
 }
 </script>
+
+<style scoped>
+.line{
+  text-align: center;
+}
+</style>
+

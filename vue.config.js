@@ -36,7 +36,13 @@ module.exports = {
       warnings: false,
       errors: true
     },
-    before: require('./mock/mock-server.js')
+    proxy: {
+      "/webtable/api":{
+        target:"http://localhost:9299/webtable",
+        pathRewrite: {"^/webtable/api" : ""}
+      }
+    },
+    // before: require('./mock/mock-server.js')
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

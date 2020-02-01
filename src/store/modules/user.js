@@ -6,7 +6,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    routers:[]
   }
 }
 
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROUTERS: (state, routers) => {
+    state.routers = routers
   }
 }
 
@@ -32,12 +36,23 @@ const actions = {
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+   
+      var data = {
+          u:"login",
+          username: username.trim(),
+          passwd: password 
+      }
+
+      login(data).then(response => {
+
+        console.log(response)
         const { data } = response
+      
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
       }).catch(error => {
+     
         reject(error)
       })
     })
@@ -46,17 +61,22 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      var data = {
+        u : "userinfo"
+      }
+      getInfo(data).then(response => {
+        console.log(response)
         const { data } = response
-
+        var routers = data.data.routers;
+        routers = routers.replace(/\ +/g,"")
+        routers = routers.replace(/[\r\n]/g,"");
         if (!data) {
           reject('Verification failed, please Login again.')
         }
-
-        const { name, avatar } = data
-
+        const { name, avatar } = data.data
+        commit('SET_ROUTERS', JSON.parse(routers))
         commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit('SET_AVATAR', "http://blog.hcyang.top/logo.png")
         resolve(data)
       }).catch(error => {
         reject(error)
@@ -67,14 +87,19 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
-      logout(state.token).then(() => {
+
         removeToken() // must remove  token  first
         resetRouter()
         commit('RESET_STATE')
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+
+      // logout(state.token).then(() => {
+      //   removeToken() // must remove  token  first
+      //   resetRouter()
+      //   commit('RESET_STATE')
+      //   resolve()
+      // }).catch(error => {
+      //   reject(error)
+      // })
     })
   },
 

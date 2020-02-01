@@ -10,7 +10,7 @@ Vue.use(Router)
 import store from "../store";
 /* Layout */
 import Layout from '@/layout'
-
+import {  Message } from 'element-ui'
 export const constantRoutes = [
   {
     path: '/login',
@@ -23,7 +23,6 @@ export const constantRoutes = [
     component: () => import('@/views/404'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -35,28 +34,16 @@ export const constantRoutes = [
       meta: { title: 'Dashboard', icon: 'dashboard' }
     }]
   },
-  {
-    path: '/aa',
-    component: Layout,
-    redirect: '/aa',
-    children: [{
-      path: 'aaa',
-      name: 'aa',
-      component: () => import('@/views/dashboard/index'),
-      meta: { title: 'aaa', icon: 'dashboard' }
-    }]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
-      }
-    ]
-  },
+  // {
+  //   path: 'external-link',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+  //       meta: { title: 'External Link', icon: 'link' }
+  //     }
+  //   ]
+  // },
 
   // 404 page must be placed at the end !!!
   // { path: '*', redirect: '/404', hidden: true }
@@ -69,9 +56,6 @@ const createRouter = () => new Router({
 })
 
 const router = createRouter()
-
-
-
 
 
 router.beforeEach(async (to, from, next) => {
@@ -98,17 +82,18 @@ router.beforeEach(async (to, from, next) => {
           // get user info
           await store.dispatch("user/getInfo");
           next();
-        
+          
           store.dispatch("permission/GenerateRoutes").then(() => {
             // 生成可访问的路由表
             router.addRoutes(store.getters.addRouters); // 动态添加可访问路由表
             next({ ...to, replace: true }); // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record
           });
         } catch (error) {
+       
           // remove token and go to login page to re-login
-          await store.dispatch("user/resetToken");
+         // await store.dispatch("user/resetToken");
           Message.error(error || "Has Error");
-          next(`/login?redirect=${to.path}`);
+          next("/login");
           NProgress.done();
         }
       }
@@ -120,7 +105,7 @@ router.beforeEach(async (to, from, next) => {
       next();
     } else {
       // other pages that do not have permission to access are redirected to the login page.
-      next(`/login?redirect=${to.path}`);
+      next("/login");
       NProgress.done();
     }
   }
