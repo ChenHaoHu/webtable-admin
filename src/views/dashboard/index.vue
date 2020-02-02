@@ -1,6 +1,16 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">你好啊: {{ name }}</div>
+    <div class="dashboard-text">你好啊,朋友
+      <br>
+     <h5> web Table 项目正在开发ing</h5>
+     <hr>
+     <h6>2020/02/03 前后端第一阶段联调，跑通基本数据，动态路由成功实现</h6>
+     <h6>2020/02/02 模板二次优化，动态路由开发，基本组件设计</h6>
+     <h6>2020/02/01 前端项目启动</h6>
+ <br>
+
+
+    </div>
   </div>
 </template>
 
@@ -24,7 +34,7 @@ export default {
   }
   &-text {
     font-size: 30px;
-    line-height: 46px;
+   // line-height: 46px;
   }
 }
 </style>
