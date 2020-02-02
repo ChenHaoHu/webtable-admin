@@ -1,5 +1,11 @@
 <template>
   <div class="app-container">
+      <el-checkbox-group v-model="choiceFields">
+        <el-checkbox :label="index" v-for="(item,index) in defultFields" checked>
+          {{item.alias}}
+        </el-checkbox>
+      </el-checkbox-group>
+      <br/>
     <el-table :data="tableData" border style="width: 100%">
       <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields" >
         <template slot-scope="scope">
@@ -31,7 +37,9 @@ export default {
       table: this.$route.name,
       tableData: [
       ],
-      fields:[],
+      choiceFields:[],
+      fields:{},
+      defultFields:{},
       dialogPreviewVisible:false,
       previewImageUrl:"http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg"
     };
@@ -54,6 +62,7 @@ export default {
         console.log(data);
         that.tableData = data.data;
         that.fields = data.fields
+        that.defultFields = data.fields
       })
       .catch(error => {});
   },
@@ -64,6 +73,19 @@ export default {
     previewImage(data,type){
       this.previewImageUrl = data;
       this.dialogPreviewVisible =true;
+    }
+  },
+   watch: {
+    choiceFields(valArr) {
+
+      var fields = {};
+    for(var key in this.defultFields ){
+      if(valArr.indexOf(key)>=0){
+         fields[key] = this.defultFields[key]
+      }
+    }
+    this.fields = fields;
+     // this.fields = this.defultFields.filter(i => valArr.indexOf(i) >= 0)
     }
   }
 };
