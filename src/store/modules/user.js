@@ -65,8 +65,9 @@ const actions = {
         u : "userinfo"
       }
       getInfo(data).then(response => {
-        console.log(response)
+
         const { data } = response
+
         var routers = data.data.routers;
         routers = routers.replace(/\ +/g,"")
         routers = routers.replace(/[\r\n]/g,"");
