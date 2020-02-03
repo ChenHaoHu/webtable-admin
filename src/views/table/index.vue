@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd">Add</el-button>
+    <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd" v-if="permission.indexOf('insert')>-1">Add</el-button>
     <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">Export</el-button>
     <el-button class="filter-item" type="primary" icon="el-icon-refresh-left" @click="initData">refresh</el-button>
     <br />
@@ -12,18 +12,19 @@
     <el-table :data="tableData" border style="width: 100%">
       <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields">
         <template slot-scope="scope">
-          <div v-if="item.webFieldType == 'String'||item.webFieldType == 'Number'||item.webFieldType == 'Select'">{{scope.row[index]}}</div>
+          <div v-if="item.webFieldType == 'String'||item.webFieldType == 'Number'">{{scope.row[index]}}</div>
           <!-- <div v-if="item.webFieldType == 'String'"> {{scope.row[index]}}</div> -->
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageURL'" @click="previewImage(scope.row[index])" />
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageBASE64'" @click="previewImage(scope.row[index])" />
+          <div v-if="item.webFieldType == 'Select'">{{item.selectArr[scope.row[index]]}}</div>
         </template>
       </el-table-column>
       <el-table-column fixed="right" label="操作" width="150">
         <template slot-scope="scope">
           <div style="text-align: center;">
-            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-            <el-button @click="handleClick(scope.row)" type="text" size="small">编辑</el-button>
-            <el-button @click="handleDelete(scope.row)" type="text" size="small">删除</el-button>
+            <el-button @click="handleLook(scope.row)" type="text" size="small">查看</el-button>
+            <el-button @click="handleUpdate(scope.row)" type="text" size="small" v-if="permission.indexOf('update')>-1" >编辑</el-button>
+            <el-button @click="handleDelete(scope.row)" type="text" size="small" v-if="permission.indexOf('delete')>-1">删除</el-button>
           </div>
         </template>
       </el-table-column>
@@ -32,6 +33,26 @@
     <el-pagination style="overflow: auto;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[6, 10, 100, 200,300,400]" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :total="totalNum"></el-pagination>
     <el-dialog title="Preview" :visible.sync="dialogPreviewVisible">
       <img width="98%;" style=" margin-left:1%; " :src="previewImageUrl" />
+    </el-dialog>
+    <el-dialog title="Look" :visible.sync="dialogLookVisible">
+      <form>
+        <el-form label-width="80px">
+          <el-form-item :label="item.alias" v-for="(item,index) in  lookFields">
+            <!-- //String/ -->
+            <el-input v-model="item.value" v-if="item.webFieldType == 'String'" disabled></el-input>
+            <!-- //Number/ -->
+            <el-input v-model="item.value" v-if="item.webFieldType == 'Number'" disabled></el-input>
+            <!-- //select/ -->
+            <el-input v-model="item.selectArr[item.value]" disabled v-if="item.webFieldType == 'Select'"></el-input>
+            <!-- //pic/ -->
+            <!--   <input v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'" name="big_ticket" type="file" value="" accept="image/jpg,image/jpeg,image/png,image/gif" style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;" :id="index" @change="getFilePath(index)" /> -->
+            <div v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'">
+              <img v-if="item.value != ''" :src="item.value" class="avatar">
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </div>
+          </el-form-item>
+        </el-form>
+      </form>
     </el-dialog>
     <el-dialog title="Add" :visible.sync="dialogAddVisible">
       <form>
@@ -43,7 +64,7 @@
             <el-input v-model="item.value" v-if="item.webFieldType == 'Number'" type="number"></el-input>
             <!-- //select/ -->
             <el-select v-model="item.value" placeholder="please select" v-if="item.webFieldType == 'Select'">
-              <el-option :label="selectIndex" :value="selectItem" v-for="(selectItem,selectIndex) in  item.selectArr"></el-option>
+              <el-option :label="selectItem" :value="selectIndex" v-for="(selectItem,selectIndex) in  item.selectArr"></el-option>
             </el-select>
             <!-- //pic/ -->
             <input v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'" name="big_ticket" type="file" value="" accept="image/jpg,image/jpeg,image/png,image/gif" style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;" :id="index" @change="getFilePath(index)" />
@@ -59,16 +80,45 @@
         </el-form>
       </form>
     </el-dialog>
+    <el-dialog title="Update" :visible.sync="dialogUpdateVisible">
+      <form>
+        <el-form label-width="80px">
+          <el-form-item :label="item.alias" v-for="(item,index) in  updateFields">
+            <!-- //String/ -->
+            <el-input v-model="item.value" v-if="item.webFieldType == 'String'" required></el-input>
+            <!-- //Number/ -->
+            <el-input v-model="item.value" v-if="item.webFieldType == 'Number'" type="number"></el-input>
+            <!-- //select/ -->
+            <el-select v-model="item.value" placeholder="please select" v-if="item.webFieldType == 'Select'">
+              <el-option :label="selectItem" :value="selectIndex" v-for="(selectItem,selectIndex) in  item.selectArr"></el-option>
+            </el-select>
+            <!-- //pic/ -->
+            <input v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'" name="big_ticket" type="file" value="" accept="image/jpg,image/jpeg,image/png,image/gif" style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;" :id="index" @change="getFilePath(index)" />
+            <div v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'" @click="chooseImg(index)">
+              <img v-if="item.value != ''" :src="item.value" class="avatar">
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </div>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="updateData">Confirm</el-button>
+            <el-button @click="cancelUpdate()">Cancel</el-button>
+          </el-form-item>
+        </el-form>
+      </form>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getList, addItem, deleteItem } from "@/api/table";
+import { getList, addItem, deleteItem, updateItem } from "@/api/table";
 
 export default {
   data() {
     return {
+      permission:[],
       addform: {},
+      dialogLookVisible: false,
       dialogAddVisible: false,
+      dialogUpdateVisible: false,
       totalNum: 100,
       pageSize: 6,
       currentPage: 1,
@@ -82,27 +132,34 @@ export default {
       defultFields: {},
       updateFields: {},
       insertFields: {},
+      lookFields: {},
       dialogPreviewVisible: false,
-      previewImageUrl: "http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg"
+      previewImageUrl: "http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg",
+      tempUpdateRow: {}
     };
   },
   mounted() {
     this.initData();
   },
   methods: {
-    handleDelete(row) {
+    updateData() {
 
-
-      this.$confirm('此操作将永久删除该条信息, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        
       var that = this;
-      console.log(row)
-      var pk = {}
+      var form = this.updateFields;
+      var fields = {}
+      for (var key in form) {
 
+        if (form[key]['value'] == '') {
+          this.$message.error('添加表单有未填写项');
+          return;
+        }
+        fields[key] = form[key]['value'];
+      }
+
+      //主键处理
+      var row = this.tempUpdateRow;
+      var pk = {}
+      console.log(row)
       for (var key in row) {
         if (key.indexOf("pk_") == 0) {
           pk[key.slice(3)] = row[key]
@@ -110,20 +167,21 @@ export default {
       }
 
       var data = {
-        u: "dtable",
+        u: "utable",
         table: that.table,
-        fields: pk
-      }
-
-      deleteItem(data)
+        fields: fields,
+        pk: pk
+      };
+      updateItem(data)
         .then(response => {
           console.log(response);
-          if (response.code == 1021) {
+          if (response.code == 1017) {
             this.$message({
-              message: '删除成功',
+              message: '更新成功',
               type: 'success'
             });
             that.initData()
+            that.dialogUpdateVisible = false;
 
           } else {
             this.$message.error(response.msg);
@@ -134,15 +192,85 @@ export default {
           console.log(error);
           alert("请求出错");
         });
+
+    },
+    cancelUpdate() {
+      this.dialogUpdateVisible = false;
+    },
+    handleUpdate(row) {
+      this.dialogUpdateVisible = true;
+      this.tempUpdateRow = row;
+      var fields = this.updateFields;
+
+      for (var key in fields) {
+        fields[key]['value'] = row[key]
+      }
+      console.log(fields)
+      this.updateFields = fields;
+    },
+    handleLook(row) {
+
+
+      var fields = this.defultFields;
+
+      for (var key in fields) {
+        fields[key]['value'] = row[key]
+      }
+
+      console.log(fields)
+      this.lookFields = fields;
+      this.dialogLookVisible = true;
+
+    },
+    handleDelete(row) {
+
+      this.$confirm('此操作将永久删除该条信息, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+
+        var that = this;
+        console.log(row)
+        var pk = {}
+
+        for (var key in row) {
+          if (key.indexOf("pk_") == 0) {
+            pk[key.slice(3)] = row[key]
+          }
+        }
+
+        var data = {
+          u: "dtable",
+          table: that.table,
+          fields: pk
+        }
+
+        deleteItem(data)
+          .then(response => {
+            console.log(response);
+            if (response.code == 1021) {
+              this.$message({
+                message: '删除成功',
+                type: 'success'
+              });
+              that.initData()
+
+            } else {
+              this.$message.error(response.msg);
+            }
+
+          })
+          .catch(error => {
+            console.log(error);
+            alert("请求出错");
+          });
       }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消删除'
         });
       });
-
-
-
     },
     chooseImg(id) {
       var item = document.getElementById(id);
@@ -264,6 +392,7 @@ export default {
           var { data } = response.data;
           console.log(data);
           that.tableData = data.data;
+          that.permission = data.permission;
 
           that.totalNum = data.total;
           var updateFields = {};
@@ -275,7 +404,7 @@ export default {
               var newSelects = {};
               for (var i = 0; i < selectsData.length; i = i + 2) {
                 if (i + 1 < selectsData.length) {
-                  newSelects[selectsData[i]] = selectsData[i + 1];
+                  newSelects[selectsData[i + 1]] = selectsData[i];
                 }
               }
               data.fields[key]["selectArr"] = newSelects;

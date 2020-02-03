@@ -2,18 +2,16 @@
   <div class="dashboard-container">
     <div class="dashboard-text">你好啊,朋友
       <br>
-     <h5> web Table 项目正在开发ing</h5>
-     <hr>
-     <h6>2020/02/03 前后端第一阶段联调，跑通基本数据，动态路由成功实现</h6>
-     <h6>2020/02/02 模板二次优化，动态路由开发，基本组件设计</h6>
-     <h6>2020/02/01 前端项目启动</h6>
- <br>
-
-
+      <h5> web Table 项目正在开发ing</h5>
+      <hr>
+      <h6>2020/02/04 完成前端表权限，CRUD开发</h6>
+      <h6>2020/02/03 前后端第一阶段联调，跑通基本数据，动态路由成功实现</h6>
+      <h6>2020/02/02 模板二次优化，动态路由开发，基本组件设计</h6>
+      <h6>2020/02/01 前端项目启动</h6>
+      <br>
     </div>
   </div>
 </template>
-
 <script>
 import { mapGetters } from 'vuex'
 
@@ -25,16 +23,18 @@ export default {
     ])
   }
 }
-</script>
 
+</script>
 <style lang="scss" scoped>
 .dashboard {
   &-container {
     margin: 30px;
   }
+
   &-text {
     font-size: 30px;
-   // line-height: 46px;
+    // line-height: 46px;
   }
 }
+
 </style>

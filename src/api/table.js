@@ -25,3 +25,13 @@ export function deleteItem(data) {
     data
   })
 }
+
+
+
+export function updateItem(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}
