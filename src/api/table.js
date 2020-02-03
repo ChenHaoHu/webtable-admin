@@ -7,3 +7,21 @@ export function getList(data) {
     data
   })
 }
+
+
+export function addItem(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}
+
+
+export function deleteItem(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}
