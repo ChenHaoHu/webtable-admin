@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container"  v-if="permission.indexOf('find')>-1">
+  <div class="app-container" v-if="permission.indexOf('find')>-1">
     <div class="filter-container" v-for="i in searchNum">
       <i class="el-icon-remove-outline" :id="i" @click="deleteSearchNum(i)"></i>
       <el-select v-model="searchType[i]" placeholder="Type" class="filter-item" style="width: 130px">
@@ -196,8 +196,8 @@ export default {
       //检验是否都填写
       if (searchTypes.length != 0 && searchTypes.length == searchFields.length && searchTypes.length == queryTexts.length) {
 
-        if(searchTypes.length>1){
-           this.$message('重复搜索条件会覆盖(上面会覆盖下面)');
+        if (searchTypes.length > 1) {
+          this.$message('重复搜索条件会覆盖(上面会覆盖下面)');
         }
 
         for (var i = 0; i < searchTypes.length; i++) {
@@ -412,8 +412,8 @@ export default {
       this.pageSize = val;
       this.initData();
     },
-    refreshData(){
-  this.findData = {}
+    refreshData() {
+      this.findData = {}
       this.likeData = {}
       this.initData();
     },
