@@ -1,10 +1,31 @@
 <template>
-  <div class="app-container">
-    <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd" v-if="permission.indexOf('insert')>-1">Add</el-button>
-    <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">Export</el-button>
-    <el-button class="filter-item" type="primary" icon="el-icon-refresh-left" @click="initData">refresh</el-button>
-    <br />
-    <br />
+  <div class="app-container"  v-if="permission.indexOf('find')>-1">
+    <div class="filter-container" v-for="i in searchNum">
+      <i class="el-icon-remove-outline" :id="i" @click="deleteSearchNum(i)"></i>
+      <el-select v-model="searchType[i]" placeholder="Type" class="filter-item" style="width: 130px">
+        <el-option v-for="item in searchTypes" :label="item.name" :value="item.value" />
+      </el-select>
+      <el-select v-model="searchField[i]" style="width: 140px" class="filter-item">
+        <el-option v-for="(item,index) in findFields" :label="item.alias" :value="index" />
+      </el-select>
+      <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" />
+    </div>
+    <div class="filter-container">
+      <i class="el-icon-circle-plus-outline" @click="addSearchNum" v-if="permission.indexOf('find')>-1"></i>
+      <el-select v-model="searchType[0]" placeholder="Type" class="filter-item" style="width: 130px" v-if="permission.indexOf('find')>-1">
+        <el-option v-for="item in searchTypes" :label="item.name" :value="item.value" />
+      </el-select>
+      <el-select v-model="searchField[0]" style="width: 140px" class="filter-item" v-if="permission.indexOf('find')>-1">
+        <el-option v-for="(item,index) in findFields" :label="item.alias" :value="index" />
+      </el-select>
+      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" v-if="permission.indexOf('find')>-1" />
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch" v-if="permission.indexOf('find')>-1">
+        Search
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd" v-if="permission.indexOf('insert')>-1">Add</el-button>
+      <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">Export</el-button>
+      <el-button class="filter-item" type="primary" icon="el-icon-refresh-left" @click="refreshData">refresh</el-button>
+    </div>
     <el-checkbox-group v-model="choiceFields">
       <el-checkbox :label="index" v-for="(item,index) in defultFields" checked>{{item.alias}}</el-checkbox>
     </el-checkbox-group>
@@ -23,7 +44,7 @@
         <template slot-scope="scope">
           <div style="text-align: center;">
             <el-button @click="handleLook(scope.row)" type="text" size="small">查看</el-button>
-            <el-button @click="handleUpdate(scope.row)" type="text" size="small" v-if="permission.indexOf('update')>-1" >编辑</el-button>
+            <el-button @click="handleUpdate(scope.row)" type="text" size="small" v-if="permission.indexOf('update')>-1">编辑</el-button>
             <el-button @click="handleDelete(scope.row)" type="text" size="small" v-if="permission.indexOf('delete')>-1">删除</el-button>
           </div>
         </template>
@@ -47,7 +68,7 @@
             <!-- //pic/ -->
             <!--   <input v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'" name="big_ticket" type="file" value="" accept="image/jpg,image/jpeg,image/png,image/gif" style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;" :id="index" @change="getFilePath(index)" /> -->
             <div v-if="item.webFieldType == 'ImageBASE64' || item.webFieldType == 'ImageURL'">
-              <img v-if="item.value != ''" :src="item.value" class="avatar">
+              <img v-if="item.value != ''" :src="item.value" class="avatar" @click="previewImage(item.value)">
               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </div>
           </el-form-item>
@@ -114,7 +135,18 @@ import { getList, addItem, deleteItem, updateItem } from "@/api/table";
 export default {
   data() {
     return {
-      permission:[],
+      searchNum: 0,
+      searchField: [],
+      searchType: [],
+      searchTypes: [{
+        name: "模糊查询",
+        value: "like",
+      }, {
+        name: "精确查询",
+        value: "equal",
+      }],
+      queryText: [],
+      permission: [],
       addform: {},
       dialogLookVisible: false,
       dialogAddVisible: false,
@@ -132,16 +164,57 @@ export default {
       defultFields: {},
       updateFields: {},
       insertFields: {},
+      findFields: {},
       lookFields: {},
       dialogPreviewVisible: false,
       previewImageUrl: "http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg",
-      tempUpdateRow: {}
+      tempUpdateRow: {},
+      likeData: {},
+      findData: {}
     };
   },
   mounted() {
     this.initData();
   },
   methods: {
+    deleteSearchNum(i) {
+      this.searchField.splice(i, 1);
+      this.searchType.splice(i, 1);
+      this.queryText.splice(i, 1);
+      this.searchNum--;
+
+    },
+    addSearchNum() {
+      this.searchNum++;
+    },
+    handleSearch() {
+      this.findData = {}
+      this.likeData = {}
+      var searchTypes = this.searchType;
+      var searchFields = this.searchField;
+      var queryTexts = this.queryText;
+      //检验是否都填写
+      if (searchTypes.length != 0 && searchTypes.length == searchFields.length && searchTypes.length == queryTexts.length) {
+
+        if(searchTypes.length>1){
+           this.$message('重复搜索条件会覆盖(上面会覆盖下面)');
+        }
+
+        for (var i = 0; i < searchTypes.length; i++) {
+          if (this.searchType[i] == "equal") {
+            this.findData[this.searchField[i]] = this.queryText[i]
+          } else {
+            //like
+            this.likeData[this.searchField[i]] = this.queryText[i]
+          }
+        }
+
+      } else {
+        this.$message.error('搜索条件不完整');
+      }
+
+      this.initData();
+    },
     updateData() {
 
       var that = this;
@@ -339,6 +412,11 @@ export default {
       this.pageSize = val;
       this.initData();
     },
+    refreshData(){
+  this.findData = {}
+      this.likeData = {}
+      this.initData();
+    },
     handleCurrentChange(val) {
       this.currentPage = val;
       this.initData();
@@ -382,10 +460,9 @@ export default {
         u: "gtable",
         table: that.table,
         pagenum: that.currentPage,
-        pagesize: that.pageSize
-        //   like: {
-        //    // id: "452760"
-        //   }
+        pagesize: that.pageSize,
+        like: that.likeData,
+        find: that.findData
       };
       getList(data)
         .then(response => {
@@ -397,6 +474,7 @@ export default {
           that.totalNum = data.total;
           var updateFields = {};
           var insertFields = {};
+          var findFields = {};
           for (var key in data.fields) {
             //处理一下 select属性
             if (data.fields[key]["selects"] != null) {
@@ -416,9 +494,13 @@ export default {
               data.fields[key]['value'] = "";
               insertFields[key] = data.fields[key];
             }
+            if (data.fields[key]["fieldPermission"].indexOf("find") >= 0) {
+              findFields[key] = data.fields[key];
+            }
           }
           that.insertFields = insertFields;
           that.updateFields = updateFields;
+          that.findFields = findFields;
           that.fields = data.fields;
           that.defultFields = data.fields;
         })
@@ -450,6 +532,10 @@ export default {
 
 </script>
 <style scoped>
+.filter-item {
+  margin-bottom: 20px;
+}
+
 .avatar-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
