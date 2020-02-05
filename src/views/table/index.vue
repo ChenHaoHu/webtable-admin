@@ -283,7 +283,6 @@ export default {
     },
     handleLook(row) {
 
-
       var fields = this.defultFields;
 
       for (var key in fields) {
@@ -444,13 +443,16 @@ export default {
       });
     },
     formatJson(filterVal) {
+      console.log( this.tableData);
+        console.log(filterVal);
       return this.tableData.map(v =>
         filterVal.map(j => {
-          if (v[j].length > 200) {
+          if (v[j]!= undefined  &&v[j].toString().length > 200) {
             return "数据太长不显示";
           } else {
             return v[j];
           }
+
         })
       );
     },
