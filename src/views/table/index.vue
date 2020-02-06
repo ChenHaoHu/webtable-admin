@@ -443,11 +443,11 @@ export default {
       });
     },
     formatJson(filterVal) {
-      console.log( this.tableData);
-        console.log(filterVal);
+      console.log(this.tableData);
+      console.log(filterVal);
       return this.tableData.map(v =>
         filterVal.map(j => {
-          if (v[j]!= undefined  &&v[j].toString().length > 200) {
+          if (v[j] != undefined && v[j].toString().length > 200) {
             return "数据太长不显示";
           } else {
             return v[j];
@@ -470,6 +470,14 @@ export default {
         .then(response => {
           var { data } = response.data;
           console.log(data);
+          if (data == null) {
+            this.$message({
+              message: '抱歉，您没有查看权限',
+              type: 'warning'
+            });
+            return;
+          }
+
           that.tableData = data.data;
           that.permission = data.permission;
 

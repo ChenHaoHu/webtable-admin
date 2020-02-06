@@ -53,6 +53,9 @@ service.interceptors.response.use(
       }) 
    
       removeToken();
+
+      location.reload()
+
       return Promise.reject(new Error(res.message || 'Error'))
  
     }else{
