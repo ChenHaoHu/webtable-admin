@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">你好啊,朋友
+    <div class="dashboard-text">你好啊, {{name}}
       <br>
       <h5> web Table 项目正在开发ing</h5>
       <hr>
