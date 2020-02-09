@@ -8,17 +8,28 @@
       <el-select v-model="searchField[i]" style="width: 140px" class="filter-item">
         <el-option v-for="(item,index) in findFields" :label="item.alias" :value="index" />
       </el-select>
-      <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" />
+      <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="searchType[i] != 'equals' && searchType[i] != 'like'" />
+      <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" type="text" v-else />
     </div>
     <div class="filter-container">
       <i class="el-icon-circle-plus-outline" @click="addSearchNum" v-if="permission.indexOf('find')>-1"></i>
+      <!-- 查询类型 -->
       <el-select v-model="searchType[0]" placeholder="Type" class="filter-item" style="width: 130px" v-if="permission.indexOf('find')>-1">
         <el-option v-for="item in searchTypes" :label="item.name" :value="item.value" />
       </el-select>
+      <!-- 查询字段 -->
       <el-select v-model="searchField[0]" style="width: 140px" class="filter-item" v-if="permission.indexOf('find')>-1">
         <el-option v-for="(item,index) in findFields" :label="item.alias" :value="index" />
       </el-select>
-      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" v-if="permission.indexOf('find')>-1" />
+      <!-- 查询文字 -->
+      
+      <!-- <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" v-if="permission.indexOf('find')>-1" /> -->
+
+     <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="permission.indexOf('find')>-1 && (searchType[0] != 'equals'&& searchType[0] != 'like')" />
+      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="text" v-else />
+
+
+
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch" v-if="permission.indexOf('find')>-1">
         Search
       </el-button>
@@ -30,11 +41,11 @@
           查看视图
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>黄金糕</el-dropdown-item>
+          <!-- <el-dropdown-item>黄金糕</el-dropdown-item>
           <el-dropdown-item>狮子头</el-dropdown-item>
           <el-dropdown-item>螺蛳粉</el-dropdown-item>
           <el-dropdown-item>双皮奶</el-dropdown-item>
-          <el-dropdown-item>蚵仔煎</el-dropdown-item>
+          <el-dropdown-item>蚵仔煎</el-dropdown-item> -->
         </el-dropdown-menu>
       </el-dropdown>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-s-data" @click="makeChartVisible = true">
@@ -43,13 +54,18 @@
     </div>
     <el-checkbox-group v-model="choiceFields">
       <el-checkbox :label="index" v-for="(item,index) in defultFields" checked>{{item.alias}}</el-checkbox>
+      <el-checkbox label="remoteSort">远程排序</el-checkbox>
     </el-checkbox-group>
     <br />
-    <el-table :data="tableData" border style="width: 100%">
-      <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields">
+    <el-table :data="tableData" border style="width: 100%" @sort-change="sortChange">
+      <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields" :sortable="(choiceFields.indexOf('remoteSort') == -1) ||  (sortFields.indexOf(index) > -1)">
         <template slot-scope="scope">
-          <div v-if="item.webFieldType == 'String'||item.webFieldType == 'Number'">{{scope.row[index]}}</div>
-          <!-- <div v-if="item.webFieldType == 'String'"> {{scope.row[index]}}</div> -->
+          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index].toString().length>20 ">
+            <el-tooltip :content="scope.row[index]" placement="bottom" effect="light">
+              <span> {{scope.row[index].slice(0,20)+"..."}}</span>
+            </el-tooltip>
+          </div>
+          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index].toString().length<=20 ">{{scope.row[index]}}</div>
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageURL'" @click="previewImage(scope.row[index])" />
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageBASE64'" @click="previewImage(scope.row[index])" />
           <div v-if="item.webFieldType == 'Select'">{{item.selectArr[scope.row[index]]}}</div>
@@ -232,6 +248,7 @@ export default {
   },
   data() {
     return {
+      localSort: false,
       dialogMaxChartVisible: false,
       chartsData: {
         xdata: [],
@@ -267,7 +284,19 @@ export default {
         value: "like",
       }, {
         name: "精确查询",
-        value: "equal",
+        value: "equals",
+      }, {
+        name: "大于",
+        value: "greater",
+      }, {
+        name: "小于",
+        value: "less",
+      }, {
+        name: "大于等于",
+        value: "greaterAndequals",
+      }, {
+        name: "小于等于",
+        value: "lessAndequals",
       }],
       queryText: [],
       permission: [],
@@ -290,11 +319,13 @@ export default {
       insertFields: {},
       findFields: {},
       lookFields: {},
+      sortFields: {},
       dialogPreviewVisible: false,
       previewImageUrl: "http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg",
       tempUpdateRow: {},
-      likeData: {},
-      findData: {}
+      // likeData: {},
+      findData: [],
+      sort: null
     };
   },
 
@@ -302,6 +333,47 @@ export default {
     this.initData();
   },
   methods: {
+
+    sortChange(data) {
+
+      const { prop, order } = data
+      var sortFields = this.sortFields;
+      var tableData = this.tableData;
+      var that = this;
+
+      if (this.choiceFields.indexOf('remoteSort') == -1) {
+        function compare(val1, val2) {
+          if (order == "ascending") {
+            if (!isNaN(val1[prop])) {
+              return val1[prop] - val2[prop];
+            } else {
+              return val1[prop].length - val2[prop].length;
+            }
+          } else {
+            if (!isNaN(val1[prop])) {
+              return val2[prop] - val1[prop];
+            } else {
+              return val2[prop].length - val1[prop].length;
+            }
+          }
+        };
+
+        tableData.sort(compare);
+        this.tableData = tableData;
+      } else {
+        var sort = {}
+        sort["field"] = prop;
+        if (order == "ascending") {
+          sort["desc"] = false;
+        } else {
+          sort["desc"] = true;
+        }
+        that.sort = sort;
+        that.initData();
+
+        that.sort = null;
+      }
+    },
     deleteSearchNum(i) {
       this.searchField.splice(i, 1);
       this.searchType.splice(i, 1);
@@ -313,7 +385,7 @@ export default {
       this.searchNum++;
     },
     handleSearch() {
-      this.findData = {}
+      this.findData = []
       this.likeData = {}
       var searchTypes = this.searchType;
       var searchFields = this.searchField;
@@ -325,14 +397,23 @@ export default {
           this.$message('重复搜索条件会覆盖(上面会覆盖下面)');
         }
 
+        var findData = [];
         for (var i = 0; i < searchTypes.length; i++) {
-          if (this.searchType[i] == "equal") {
-            this.findData[this.searchField[i]] = this.queryText[i]
-          } else {
-            //like
-            this.likeData[this.searchField[i]] = this.queryText[i]
-          }
+          // if (this.searchType[i] == "equal") {
+          //   this.findData[this.searchField[i]] = this.queryText[i]
+          // } 
+
+          //  if (this.searchType[i] == "like") { 
+          //   //like
+          //   this.likeData[this.searchField[i]] = this.queryText[i]
+          // }
+          findData.push({
+            key: this.searchField[i],
+            value: this.queryText[i],
+            compare: this.searchType[i]
+          })
         }
+        this.findData = findData;
 
       } else {
         this.$message.error('搜索条件不完整');
@@ -537,8 +618,8 @@ export default {
       this.initData();
     },
     refreshData() {
-      this.findData = {}
-      this.likeData = {}
+      this.findData = []
+      // this.likeData = {}
       this.initData();
     },
     handleCurrentChange(val) {
@@ -588,8 +669,9 @@ export default {
         table: that.table,
         pagenum: that.currentPage,
         pagesize: that.pageSize,
-        like: that.likeData,
-        find: that.findData
+        // like: that.likeData,
+        find: that.findData,
+        sort: that.sort
       };
       getList(data)
         .then(response => {
@@ -610,6 +692,7 @@ export default {
           var updateFields = {};
           var insertFields = {};
           var findFields = {};
+          var sortFields = [];
           for (var key in data.fields) {
             //处理一下 select属性
             if (data.fields[key]["selects"] != null) {
@@ -632,10 +715,14 @@ export default {
             if (data.fields[key]["fieldPermission"].indexOf("find") >= 0) {
               findFields[key] = data.fields[key];
             }
+            if (data.fields[key]["fieldPermission"].indexOf("sort") >= 0) {
+              sortFields.push(key);
+            }
           }
           that.insertFields = insertFields;
           that.updateFields = updateFields;
           that.findFields = findFields;
+          that.sortFields = sortFields;
           that.fields = data.fields;
           that.defultFields = data.fields;
         })
