@@ -25,6 +25,21 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd" v-if="permission.indexOf('insert')>-1">Add</el-button>
       <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">Export</el-button>
       <el-button class="filter-item" type="primary" icon="el-icon-refresh-left" @click="refreshData">refresh</el-button>
+      <el-dropdown class="filter-item" style="margin-left: 10px;">
+        <el-button type="primary" icon="el-icon-s-grid">
+          查看视图
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item>黄金糕</el-dropdown-item>
+          <el-dropdown-item>狮子头</el-dropdown-item>
+          <el-dropdown-item>螺蛳粉</el-dropdown-item>
+          <el-dropdown-item>双皮奶</el-dropdown-item>
+          <el-dropdown-item>蚵仔煎</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-s-data" @click="makeChartVisible = true">
+        制作视图
+      </el-button>
     </div>
     <el-checkbox-group v-model="choiceFields">
       <el-checkbox :label="index" v-for="(item,index) in defultFields" checked>{{item.alias}}</el-checkbox>
@@ -127,14 +142,123 @@
         </el-form>
       </form>
     </el-dialog>
+    <el-dialog title="制作可视化视图" :visible.sync="makeChartVisible" width="80%">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form ref="form" :model="buildChartForm" label-width="150px" style="width: 80%;">
+            <el-form-item label="可视化表名称" class="block">
+              <el-input v-model="buildChartForm.title" placeholder="可视化表名称"></el-input>
+            </el-form-item>
+            <el-form-item label="可视化类型">
+              <el-select v-model="buildChartForm.charttype" placeholder="请选择">
+                <el-option v-for="item in chartType" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="X  数据" v-if="buildChartForm.charttype < '4'">
+              <el-select v-model="buildChartForm.x" placeholder="请选择">
+                <el-option v-for="(item,index) in fields" :label="item.alias" :value="index">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Y 数据" v-if="buildChartForm.charttype < '4'">
+              <el-select v-model="buildChartForm.y" placeholder="请选择">
+                <el-option v-for="(item,index) in fields" :label="item.alias" :value="index">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Name" v-if="buildChartForm.charttype >= '4'">
+              <el-select v-model="buildChartForm.x" placeholder="请选择">
+                <el-option v-for="(item,index) in fields" :label="item.alias" :value="index">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="value" v-if="buildChartForm.charttype >= '4'">
+              <el-select v-model="buildChartForm.y" placeholder="请选择">
+                <el-option v-for="(item,index) in fields" :label="item.alias" :value="index">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="'数据范围 ['+buildChartForm.datarange+'] '" class="block">
+              <el-slider v-model="buildChartForm.datarange" range show-stops :max="tableData.length" color:red>
+              </el-slider>
+            </el-form-item>
+          </el-form>
+        </el-col>
+        <el-col :span="12">
+          <LineChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '1'" />
+          <LineChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '2'" />
+          <BarChart :chart-data="chartsData" v-if="buildChartForm.charttype == '3'" />
+          <PieChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '4'" />
+          <PieChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '5'" />
+          <PieChart3 :chart-data="chartsData" v-if="buildChartForm.charttype == '6'" />
+        </el-col>
+      </el-row>
+      <div style="position: absolute;bottom: 10px;right: 20px;">
+        <i class="el-icon-full-screen" @click="dialogMaxChartVisible = true"></i>
+      </div>
+    </el-dialog>
+    <el-dialog title="可视化大图" :visible.sync="dialogMaxChartVisible" width="80%">
+      <LineChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '1'" />
+      <LineChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '2'" />
+      <BarChart :chart-data="chartsData" v-if="buildChartForm.charttype == '3'" />
+      <PieChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '4'" />
+      <PieChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '5'" />
+      <PieChart3 :chart-data="chartsData" v-if="buildChartForm.charttype == '6'" />
+    </el-dialog>
   </div>
 </template>
 <script>
 import { getList, addItem, deleteItem, updateItem } from "@/api/table";
 
+import LineChart1 from './echarts/LineChart1'
+import LineChart2 from './echarts/LineChart2'
+import PieChart1 from './echarts/PieChart1'
+import PieChart2 from './echarts/PieChart2'
+import PieChart3 from './echarts/PieChart3'
+import BarChart from './echarts/BarChart'
+
 export default {
+  components: {
+
+    LineChart1,
+    LineChart2,
+    PieChart1,
+    PieChart2,
+    PieChart3,
+    BarChart
+
+
+  },
   data() {
     return {
+      dialogMaxChartVisible: false,
+      chartsData: {
+        xdata: [],
+        ydata: [],
+        name: "",
+      },
+      buildChartForm: {},
+      chartType: [{
+        label: "曲线图",
+        value: "1"
+      }, {
+        label: "折线图",
+        value: "2"
+      }, {
+        label: "柱形图",
+        value: "3"
+      }, {
+        label: "饼状图1",
+        value: "4"
+      }, {
+        label: "饼状图2",
+        value: "5"
+      }, {
+        label: "饼状图3",
+        value: "6"
+      }, ],
+      makeChartVisible: false,
       searchNum: 0,
       searchField: [],
       searchType: [],
@@ -173,6 +297,7 @@ export default {
       findData: {}
     };
   },
+
   mounted() {
     this.initData();
   },
@@ -536,8 +661,36 @@ export default {
       this.fieldsNameArr = fieldsNameArr;
       this.fieldsAliasNameArr = fieldsAliasNameArr;
       // this.fields = this.defultFields.filter(i => valArr.indexOf(i) >= 0)
+    },
+    buildChartForm: {
+      deep: true,
+      handler(val) {
+        var x = val.x;
+        var y = val.y;
+        var datarange = val.datarange;
+        var xs = [];
+        var ys = [];
+        var data = this.tableData;
+
+        for (var i = datarange[0]; i < datarange[1]; i++) {
+          if (data[i][x] == undefined) {
+            return;
+          }
+          if (data[i][y] == undefined) {
+            return;
+          }
+          xs.push(data[i][x]);
+          ys.push(data[i][y]);
+        }
+        this.chartsData.xdata = xs;
+        this.chartsData.ydata = ys;
+        this.chartsData.name = this.fields[y]["alias"]
+        this.chartsData.title = val.title
+      }
+
     }
-  }
+  },
+
 };
 
 </script>
