@@ -42,7 +42,9 @@ export default {
       deep: true,
       handler(val) {
         this.setOptions(val)
+
       }
+
     }
   },
   mounted() {

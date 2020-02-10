@@ -22,14 +22,9 @@
         <el-option v-for="(item,index) in findFields" :label="item.alias" :value="index" />
       </el-select>
       <!-- 查询文字 -->
-      
       <!-- <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" v-if="permission.indexOf('find')>-1" /> -->
-
-     <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="permission.indexOf('find')>-1 && (searchType[0] != 'equals'&& searchType[0] != 'like')" />
+      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="permission.indexOf('find')>-1 && (searchType[0] != 'equals'&& searchType[0] != 'like')" />
       <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="text" v-else />
-
-
-
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch" v-if="permission.indexOf('find')>-1">
         Search
       </el-button>
@@ -57,15 +52,17 @@
       <el-checkbox label="remoteSort">远程排序</el-checkbox>
     </el-checkbox-group>
     <br />
+    <el-pagination style="overflow: auto;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="pageSizes" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :total="totalNum"></el-pagination>
+    <br />
     <el-table :data="tableData" border style="width: 100%" @sort-change="sortChange">
       <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields" :sortable="(choiceFields.indexOf('remoteSort') == -1) ||  (sortFields.indexOf(index) > -1)">
         <template slot-scope="scope">
-          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index].toString().length>20 ">
+          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index]!= undefined && scope.row[index].toString().length>20 ">
             <el-tooltip :content="scope.row[index]" placement="bottom" effect="light">
               <span> {{scope.row[index].slice(0,20)+"..."}}</span>
             </el-tooltip>
           </div>
-          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index].toString().length<=20 ">{{scope.row[index]}}</div>
+          <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index]!= undefined && scope.row[index].toString().length<=20 ">{{scope.row[index]}}</div>
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageURL'" @click="previewImage(scope.row[index])" />
           <img height="50px;" :src="scope.row[index]" v-if="item.webFieldType == 'ImageBASE64'" @click="previewImage(scope.row[index])" />
           <div v-if="item.webFieldType == 'Select'">{{item.selectArr[scope.row[index]]}}</div>
@@ -82,7 +79,6 @@
       </el-table-column>
     </el-table>
     <br />
-    <el-pagination style="overflow: auto;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[6, 10, 100, 200,300,400]" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :total="totalNum"></el-pagination>
     <el-dialog title="Preview" :visible.sync="dialogPreviewVisible">
       <img width="98%;" style=" margin-left:1%; " :src="previewImageUrl" />
     </el-dialog>
@@ -211,16 +207,18 @@
         </el-col>
       </el-row>
       <div style="position: absolute;bottom: 10px;right: 20px;">
-        <i class="el-icon-full-screen" @click="dialogMaxChartVisible = true"></i>
+        <i class="el-icon-full-screen" @click="showMaxCharts"></i>
       </div>
     </el-dialog>
-    <el-dialog title="可视化大图" :visible.sync="dialogMaxChartVisible" width="80%">
-      <LineChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '1'" />
-      <LineChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '2'" />
-      <BarChart :chart-data="chartsData" v-if="buildChartForm.charttype == '3'" />
-      <PieChart1 :chart-data="chartsData" v-if="buildChartForm.charttype == '4'" />
-      <PieChart2 :chart-data="chartsData" v-if="buildChartForm.charttype == '5'" />
-      <PieChart3 :chart-data="chartsData" v-if="buildChartForm.charttype == '6'" />
+    <el-dialog title="可视化大图" :visible.sync="dialogMaxChartVisible">
+      <el-row :gutter="20">
+        <LineChart1 :chart-data="chartsMaxData" v-if="maxChartsType == '1'" style="width: 100%" />
+        <LineChart2 :chart-data="chartsMaxData" v-if="maxChartsType == '2'" style="width: 100%" />
+        <BarChart :chart-data="chartsMaxData" v-if="maxChartsType == '3'" style="width: 100%" />
+        <PieChart1 :chart-data="chartsMaxData" v-if="maxChartsType == '4'" style="width: 100%" />
+        <PieChart2 :chart-data="chartsMaxData" v-if="maxChartsType == '5'" style="width: 100%" />
+        <PieChart3 :chart-data="chartsMaxData" v-if="maxChartsType == '6'" style="width: 100%" />
+      </el-row>
     </el-dialog>
   </div>
 </template>
@@ -248,6 +246,9 @@ export default {
   },
   data() {
     return {
+      pageSizes:"",
+      maxChartsType: "",
+      chartsMaxData: {},
       localSort: false,
       dialogMaxChartVisible: false,
       chartsData: {
@@ -333,6 +334,11 @@ export default {
     this.initData();
   },
   methods: {
+    showMaxCharts() {
+      this.dialogMaxChartVisible = true
+      this.chartsMaxData = this.chartsData;
+      this.maxChartsType = this.buildChartForm.charttype;
+    },
 
     sortChange(data) {
 
@@ -689,6 +695,16 @@ export default {
           that.permission = data.permission;
 
           that.totalNum = data.total;
+
+         var pageSizes = [];
+
+         for(var i =0;i<=data.total/50+1;i++){
+          pageSizes.push(i*50);
+         }
+         pageSizes[0] = 6;
+
+         this.pageSizes = pageSizes;
+ 
           var updateFields = {};
           var insertFields = {};
           var findFields = {};
@@ -725,10 +741,15 @@ export default {
           that.sortFields = sortFields;
           that.fields = data.fields;
           that.defultFields = data.fields;
+
+          this.$message({
+          message: '数据加载成功',
+          type: 'success'
+        });
+
         })
         .catch(error => {
-          console.log(error);
-          alert("加载数据出错");
+         this.$message.error('加载数据出错');
         });
     }
   },
