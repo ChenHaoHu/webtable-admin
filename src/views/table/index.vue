@@ -50,7 +50,7 @@
     <br />
     <el-pagination style="overflow: auto;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="pageSizes" :page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :total="totalNum"></el-pagination>
     <br />
-    <el-table :data="tableData" border style="width: 100%" @sort-change="sortChange">
+    <el-table :data="tableData" border style="width: 100%" @sort-change="sortChange"   v-loading="loading"  >
       <el-table-column :prop="index" :label="item.alias" v-for="(item,index) in fields" :sortable="(choiceFields.indexOf('remoteSort') == -1) ||  (sortFields.indexOf(index) > -1)">
         <template slot-scope="scope">
           <div v-if="(item.webFieldType == 'String'||item.webFieldType == 'Number') && scope.row[index]!= undefined && scope.row[index].toString().length>20 ">
@@ -242,6 +242,7 @@ export default {
   },
   data() {
     return {
+      loading:false,
       readyCharts: {},
       pageSizes: "",
       maxChartsType: "",
@@ -702,6 +703,9 @@ export default {
     },
     initData() {
       var that = this;
+
+      that.loading = true;
+
       var data = {
         u: "gtable",
         table: that.table,
@@ -775,6 +779,8 @@ export default {
           that.defultFields = data.fields;
           that.readyCharts = data.wchart;
 
+          that.loading = false;
+
           this.$message({
             message: '数据加载成功',
             type: 'success'
@@ -783,6 +789,7 @@ export default {
         })
         .catch(error => {
           this.$message.error('加载数据出错');
+         that.loading = false;
         });
     }
   },
