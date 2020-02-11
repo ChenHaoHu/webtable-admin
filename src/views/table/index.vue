@@ -31,16 +31,12 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd" v-if="permission.indexOf('insert')>-1">Add</el-button>
       <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">Export</el-button>
       <el-button class="filter-item" type="primary" icon="el-icon-refresh-left" @click="refreshData">refresh</el-button>
-      <el-dropdown class="filter-item" style="margin-left: 10px;">
+      <el-dropdown class="filter-item" style="margin-left: 10px;" @command="selectChart" v-if="readyCharts!=null">
         <el-button type="primary" icon="el-icon-s-grid">
           查看视图
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <!-- <el-dropdown-item>黄金糕</el-dropdown-item>
-          <el-dropdown-item>狮子头</el-dropdown-item>
-          <el-dropdown-item>螺蛳粉</el-dropdown-item>
-          <el-dropdown-item>双皮奶</el-dropdown-item>
-          <el-dropdown-item>蚵仔煎</el-dropdown-item> -->
+          <el-dropdown-item v-for="(item,index) in readyCharts" :command="item">{{index}}</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-s-data" @click="makeChartVisible = true">
@@ -246,7 +242,8 @@ export default {
   },
   data() {
     return {
-      pageSizes:"",
+      readyCharts: {},
+      pageSizes: "",
       maxChartsType: "",
       chartsMaxData: {},
       localSort: false,
@@ -334,6 +331,41 @@ export default {
     this.initData();
   },
   methods: {
+
+    selectChart(data) {
+      var that = this;
+      var data = {
+        u: "gchart",
+        table: that.table,
+        chart: data,
+      };
+      updateItem(data)
+        .then(response => {
+          console.log(response);
+          if (response.code == 1000) {
+            var { data } = response.data;
+
+            that.maxChartsType = data.type;
+            that.chartsMaxData = {
+              xdata: data.xvalues,
+              ydata: data.yvalues,
+              name: data.name,
+              xname:data.xname,
+              yname:data.yname,
+            }
+            that.dialogMaxChartVisible = true
+
+          } else {
+            this.$message.error(response.msg);
+          }
+
+        })
+        .catch(error => {
+          console.log(error);
+          alert("请求出错");
+        });
+    },
+
     showMaxCharts() {
       this.dialogMaxChartVisible = true
       this.chartsMaxData = this.chartsData;
@@ -696,15 +728,15 @@ export default {
 
           that.totalNum = data.total;
 
-         var pageSizes = [];
+          var pageSizes = [];
 
-         for(var i =0;i<=data.total/50+1;i++){
-          pageSizes.push(i*50);
-         }
-         pageSizes[0] = 6;
+          for (var i = 0; i <= data.total / 50 + 1; i++) {
+            pageSizes.push(i * 50);
+          }
+          pageSizes[0] = 6;
 
-         this.pageSizes = pageSizes;
- 
+          this.pageSizes = pageSizes;
+
           var updateFields = {};
           var insertFields = {};
           var findFields = {};
@@ -741,15 +773,16 @@ export default {
           that.sortFields = sortFields;
           that.fields = data.fields;
           that.defultFields = data.fields;
+          that.readyCharts = data.wchart;
 
           this.$message({
-          message: '数据加载成功',
-          type: 'success'
-        });
+            message: '数据加载成功',
+            type: 'success'
+          });
 
         })
         .catch(error => {
-         this.$message.error('加载数据出错');
+          this.$message.error('加载数据出错');
         });
     }
   },
@@ -793,6 +826,8 @@ export default {
         this.chartsData.xdata = xs;
         this.chartsData.ydata = ys;
         this.chartsData.name = this.fields[y]["alias"]
+        this.chartsData.xname = this.fields[x]["alias"]
+        this.chartsData.yname = this.fields[y]["alias"]
         this.chartsData.title = val.title
       }
 

@@ -124,6 +124,7 @@ export default {
         series: [{
           name: name,
           type: 'pie',
+          top: 30,
           radius: '55%',
           center: ['50%', '38%'],
           data: seriesData,

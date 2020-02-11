@@ -117,13 +117,14 @@ export default {
         },
         legend: {
           left: 'center',
-          bottom: '10',
+          bottom: '0',
           data: legendData
         },
         series: [{
           name: name,
           type: 'pie',
-         radius: ['50%', '70%'],
+          top: 30,
+          radius: ['50%', '70%'],
           center: ['50%', '48%'],
           data: seriesData,
           animationEasing: 'cubicInOut',

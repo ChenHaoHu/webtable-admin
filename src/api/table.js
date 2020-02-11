@@ -35,3 +35,11 @@ export function updateItem(data) {
     data
   })
 }
+
+export function getChart(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}

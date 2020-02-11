@@ -60,13 +60,14 @@ export default {
       this.chart = echarts.init(this.$el, 'macarons')
       this.setOptions(this.chartData)
     },
-    setOptions({ title, name, xdata, ydata } = {}) {
+    setOptions({ xname,yname,title, name, xdata, ydata } = {}) {
       this.chart.setOption({
-        title: {
-          text: title,
-          left: 'left'
-        },
+        // title: {
+        //   text: title,
+        //   left: 'left'
+        // },
         xAxis: {
+          name:xname,
           data: xdata,
           boundaryGap: false,
           axisTick: {
@@ -75,7 +76,7 @@ export default {
         },
         grid: {
           left: 10,
-          right: 10,
+          right: '15%',
           bottom: 20,
           top: 30,
           containLabel: true
@@ -91,13 +92,14 @@ export default {
           }
         },
         yAxis: {
+          name:yname,
           axisTick: {
             show: false
           }
         },
         legend: {},
         series: [{
-          name: name,
+          name: title,
           smooth: true,
           type: 'line',
           itemStyle: {

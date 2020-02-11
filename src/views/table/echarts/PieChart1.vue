@@ -109,7 +109,7 @@ export default {
       this.chart.setOption({
         title: {
           text: title,
-          left: 'center'
+          left: 'center',
         },
 
         tooltip: {
@@ -121,8 +121,10 @@ export default {
           bottom: '10',
           data: legendData
         },
-         series: [{
+
+        series: [{
           name: name,
+          top: 30,
           type: 'pie',
           roseType: 'radius',
           radius: [15, 95],

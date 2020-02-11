@@ -66,7 +66,7 @@ export default {
       this.setOptions(this.chartData)
     },
 
-     setOptions({ title, name, xdata, ydata } = {}) {
+     setOptions({xname,yname, title, name, xdata, ydata } = {}) {
       this.chart.setOption({
           title: {
           text: title,
@@ -79,13 +79,14 @@ export default {
           }
         },
         grid: {
-          top: 10,
+          top: 40,
           left: '2%',
-          right: '2%',
+          right: '12%',
           bottom: '3%',
           containLabel: true
         },
         xAxis: [{
+          name:xname,
           type: 'category',
           data: xdata,
           axisTick: {
@@ -93,6 +94,7 @@ export default {
           }
         }],
         yAxis: [{
+          name:yname,
           type: 'value',
           axisTick: {
             show: false
