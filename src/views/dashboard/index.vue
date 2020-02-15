@@ -1,30 +1,82 @@
 <template>
   <div class="dashboard-container">
-    <div class="dashboard-text">你好啊, {{name}}
-      <br>
-      <h5> web Table 项目正在开发ing</h5>
-      <hr>
-      <h6>2020/02/10 添加多种查询条件，添加本地/远程排序功能</h6>
-      <h6>2020/02/09 添加本地可视化编辑功能</h6>
-      <h6>2020/02/05 完成分享模块管理，修复中文提交bug</h6>
-      <h6>2020/02/04 完成前端表权限，CRUD开发</h6>
-      <h6>2020/02/03 前后端第一阶段联调，跑通基本数据，动态路由成功实现</h6>
-      <h6>2020/02/02 模板二次优化，动态路由开发，基本组件设计</h6>
-      <h6>2020/02/01 前端项目启动</h6>
-      <br>
+    <div class="charts">
+      <div class="chart">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>卡片名称1</span>
+          </div>
+          <PieChart3 :chart-data="chartsData" style="width: 100%" />
+        </el-card>
+      </div>
+      <div class="chart">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>卡片名称2</span>
+          </div>
+          <BarChart :chart-data="chartsData" style="width: 100%" />
+        </el-card>
+      </div>
+      <div class="chart">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>卡片名称3</span>
+          </div>
+          <LineChart1 :chart-data="chartsData" style="width: 100%" />
+        </el-card>
+      </div>
+      <div class="chart">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>卡片名称4</span>
+          </div>
+          <BarChart :chart-data="chartsData" style="width: 100%" />
+        </el-card>
+      </div>
+      <div class="chart">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>卡片名称5</span>
+          </div>
+          <PieChart1 :chart-data="chartsData" style="width: 100%" />
+        </el-card>
+      </div>
     </div>
   </div>
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import LineChart1 from '@/views/table/echarts/LineChart1'
+import LineChart2 from '@/views/table/echarts/LineChart2'
+import PieChart1 from '@/views/table/echarts/PieChart1'
+import PieChart2 from '@/views/table/echarts/PieChart2'
+import PieChart3 from '@/views/table/echarts/PieChart3'
+import BarChart from '@/views/table/echarts/BarChart'
 
 export default {
+  components: {
+
+    LineChart1,
+    LineChart2,
+    PieChart1,
+    PieChart2,
+    PieChart3,
+    BarChart
+
+
+  },
   name: 'Dashboard',
+  data() {
+    return {
+      chartsData: { "xdata": ["aaa", "bbb", "ccc", "ddd"], "ydata": [100, 200, 300, 400], "title": "aaa", "xname": "测试横坐标", "yname": "测试竖坐标" }
+    }
+  },
   computed: {
     ...mapGetters([
       'name'
     ])
-  }
+  },
+
 }
 
 </script>
@@ -37,6 +89,44 @@ export default {
   &-text {
     font-size: 30px;
     // line-height: 46px;
+  }
+}
+
+.el-row {
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.charts {
+  column-count: 2;
+}
+
+.chart {
+  width: 100%;
+  margin-bottom: 30px;
+  break-inside: avoid;
+}
+
+@media (min-width: 992px) and (max-width: 1300px) {
+  .charts {
+    column-count: 1;
+  }
+
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .charts {
+    column-count: 1;
+  }
+
+}
+
+@media (max-width: 767px) {
+  .charts {
+    column-count: 1;
   }
 }
 

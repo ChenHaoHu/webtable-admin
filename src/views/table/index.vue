@@ -219,7 +219,7 @@
   </div>
 </template>
 <script>
-import { getList, addItem, deleteItem, updateItem } from "@/api/table";
+import { getList, addItem, deleteItem, updateItem ,getChart} from "@/api/table";
 
 import LineChart1 from './echarts/LineChart1'
 import LineChart2 from './echarts/LineChart2'
@@ -340,19 +340,19 @@ export default {
         table: that.table,
         chart: data,
       };
-      updateItem(data)
+      getChart(data)
         .then(response => {
           console.log(response);
           if (response.code == 1000) {
-            var { data } = response.data;
-
-            that.maxChartsType = data.type;
+            var { title,chart } = response.data.data;
+          
+            that.maxChartsType = chart.type;
             that.chartsMaxData = {
-              xdata: data.xvalues,
-              ydata: data.yvalues,
-              name: data.name,
-              xname: data.xname,
-              yname: data.yname,
+              xdata: chart.xvalues,
+              ydata: chart.yvalues,
+              title: chart.title == ""?title:chart.title,
+              xname: chart.xname,
+              yname: chart.yname,
             }
             that.dialogMaxChartVisible = true
 

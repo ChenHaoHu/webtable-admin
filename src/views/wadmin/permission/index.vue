@@ -1,11 +1,14 @@
 <template>
   <div class="app-container">
-   permission management
+   
   </div>
 </template>
 
 <script>
+
+
 export default {
+
   data() {
     return {
       form: {
