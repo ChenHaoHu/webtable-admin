@@ -43,3 +43,12 @@ export function getChart(data) {
     data
   })
 }
+
+
+export function gethomepage(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}

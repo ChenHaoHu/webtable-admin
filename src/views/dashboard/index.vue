@@ -1,44 +1,17 @@
 <template>
   <div class="dashboard-container">
     <div class="charts">
-      <div class="chart">
+      <div class="chart" v-for="(item,index) in chartsData">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>卡片名称1</span>
+            <span>{{item.title}}</span>
           </div>
-          <PieChart3 :chart-data="chartsData" style="width: 100%" />
-        </el-card>
-      </div>
-      <div class="chart">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>卡片名称2</span>
-          </div>
-          <BarChart :chart-data="chartsData" style="width: 100%" />
-        </el-card>
-      </div>
-      <div class="chart">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>卡片名称3</span>
-          </div>
-          <LineChart1 :chart-data="chartsData" style="width: 100%" />
-        </el-card>
-      </div>
-      <div class="chart">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>卡片名称4</span>
-          </div>
-          <BarChart :chart-data="chartsData" style="width: 100%" />
-        </el-card>
-      </div>
-      <div class="chart">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>卡片名称5</span>
-          </div>
-          <PieChart1 :chart-data="chartsData" style="width: 100%" />
+          <LineChart1 :chart-data="item" v-if="item.type == '1'" />
+          <LineChart2 :chart-data="item" v-if="item.type == '2'" />
+          <BarChart :chart-data="item" v-if="item.type == '3'" />
+          <PieChart1 :chart-data="item" v-if="item.type == '4'" />
+          <PieChart2 :chart-data="item" v-if="item.type == '5'" />
+          <PieChart3 :chart-data="item" v-if="item.type == '6'" />
         </el-card>
       </div>
     </div>
@@ -52,6 +25,8 @@ import PieChart1 from '@/views/table/echarts/PieChart1'
 import PieChart2 from '@/views/table/echarts/PieChart2'
 import PieChart3 from '@/views/table/echarts/PieChart3'
 import BarChart from '@/views/table/echarts/BarChart'
+
+import { gethomepage } from "@/api/table";
 
 export default {
   components: {
@@ -68,7 +43,7 @@ export default {
   name: 'Dashboard',
   data() {
     return {
-      chartsData: { "xdata": ["aaa", "bbb", "ccc", "ddd"], "ydata": [100, 200, 300, 400], "title": "aaa", "xname": "测试横坐标", "yname": "测试竖坐标" }
+      chartsData: []
     }
   },
   computed: {
@@ -76,6 +51,46 @@ export default {
       'name'
     ])
   },
+  mounted() {
+
+
+    var data = {
+      u: "ghomepage",
+
+    };
+    gethomepage(data)
+      .then(response => {
+
+        if (response.code == 1000) {
+
+          var { data } = response.data
+
+          var list = []
+
+          for (var i = 0; i < data.length; i++) {
+            list.push({
+              xdata: data[i].chart.xvalues,
+              ydata: data[i].chart.yvalues,
+              title: data[i].chart.title == "" ? data[i].title : data[i].chart.title,
+              xname: data[i].chart.xname,
+              type: data[i].chart.type,
+              yname: data[i].chart.yname,
+            })
+          }
+
+          this.chartsData = list;
+
+
+        } else {
+          this.$message.error(response.msg);
+        }
+
+      })
+      .catch(error => {
+        console.log(error);
+        this.$message.error('请求出错');
+      });
+  }
 
 }
 

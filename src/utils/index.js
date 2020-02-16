@@ -132,4 +132,18 @@ export function debounce(func, wait, immediate) {
       }
     }
   }
+
+  return function(...args) {
+    context = this
+    timestamp = +new Date()
+    const callNow = immediate && !timeout
+    // 如果延时不存在，重新设定延时
+    if (!timeout) timeout = setTimeout(later, wait)
+    if (callNow) {
+      result = func.apply(context, args)
+      context = args = null
+    }
+
+    return result
+  }
 }
