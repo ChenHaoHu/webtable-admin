@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" v-if="permission.indexOf('find')>-1">
+  <div class="app-container" >
     <div class="filter-container" v-for="i in searchNum">
       <i class="el-icon-remove-outline" :id="i" @click="deleteSearchNum(i)"></i>
       <el-select v-model="searchType[i]" placeholder="Type" class="filter-item" style="width: 130px">
@@ -11,7 +11,7 @@
       <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="searchType[i] != 'equals' && searchType[i] != 'like'" />
       <el-input v-model="queryText[i]" placeholder="search" style="width: 200px;" class="filter-item" type="text" v-else />
     </div>
-    <div class="filter-container">
+    <div class="filter-container" >
       <i class="el-icon-circle-plus-outline" @click="addSearchNum" v-if="permission.indexOf('find')>-1"></i>
       <!-- 查询类型 -->
       <el-select v-model="searchType[0]" placeholder="Type" class="filter-item" style="width: 130px" v-if="permission.indexOf('find')>-1">
@@ -23,8 +23,11 @@
       </el-select>
       <!-- 查询文字 -->
       <!-- <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" v-if="permission.indexOf('find')>-1" /> -->
-      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="number" v-if="permission.indexOf('find')>-1 && (searchType[0] != 'equals'&& searchType[0] != 'like')" />
-      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="text" v-else />
+      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="number" 
+      v-if="permission.indexOf('find')>-1 && (searchType[0] != 'equals'&& searchType[0] != 'like')" />
+      <el-input v-model="queryText[0]" placeholder="search" style="width: 200px;" class="filter-item" type="text" 
+ v-if="permission.indexOf('find')>-1 && !(searchType[0] != 'equals'&& searchType[0] != 'like') "
+       />
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch" v-if="permission.indexOf('find')>-1">
         Search
       </el-button>
@@ -244,7 +247,7 @@ export default {
     return {
       loading: false,
       readyCharts: {},
-      pageSizes: "",
+      pageSizes: [],
       maxChartsType: "",
       chartsMaxData: {},
       localSort: false,
@@ -320,7 +323,7 @@ export default {
       lookFields: {},
       sortFields: {},
       dialogPreviewVisible: false,
-      previewImageUrl: "http://p0.qhimg.com/bdm/720_444_0/t01bb9210f980080236.jpg",
+      previewImageUrl: "",
       tempUpdateRow: {},
       // likeData: {},
       findData: [],

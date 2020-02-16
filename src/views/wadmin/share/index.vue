@@ -67,12 +67,7 @@ export default {
       dialogPermissionVisible: false,
       choose: "",
       treeData: [],
-      tableData: [{
-        key: "1111",
-        passwd: "2222",
-        marks: "测试分享内容",
-        status: "1"
-      }],
+      tableData: [],
       tempRow: {}
 
     };
@@ -217,9 +212,11 @@ export default {
       this.tempRow = row;
       var permission = row.permission.filter(function(ele) {
 
-        if (ele.indexOf("permission.") > -1 || ele.indexOf("fields.") > -1) {
+        if (ele.indexOf("permission.") > -1 || ele.indexOf("fields.") > -1 ){
           return ele;
         }
+
+
       });
       this.shareMarks = row.marks;
       setTimeout(
@@ -280,6 +277,30 @@ export default {
 
             var permissions = [];
             for (var i = 0; i < res[table]["permission"].length; i++) {
+
+              if (res[table]["permission"][i] == "chart") {
+
+                console.log(res[table]["wchart"])
+                if (res[table]["wchart"] != null) {
+                  var chartChildren = [];
+                  for (var key in res[table]["wchart"]) {
+                    chartChildren.push({
+                      id: "permission." + table + ".chart." + res[table]["wchart"][key],
+                      label: key,
+                    })
+                  }
+                  permissions.push({
+                    id: table+"chart",
+                    label: "chart",
+                    children: chartChildren
+                  })
+                }
+
+
+
+                continue;
+              }
+
               permissions.push({
                 id: "permission." + table + "." + res[table]["permission"][i],
                 label: res[table]["permission"][i],
@@ -297,13 +318,13 @@ export default {
             var tableChildren = [];
             tableChildren.push({
               id: table + "permission",
-              label: "表权限",
+              label: "权限",
               children: permissions
             })
 
             tableChildren.push({
               id: table + "fields",
-              label: "字段",
+              label: "可控字段",
               children: fields
             })
 

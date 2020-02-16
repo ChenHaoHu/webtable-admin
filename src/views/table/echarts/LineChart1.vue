@@ -61,6 +61,12 @@ export default {
       this.setOptions(this.chartData)
     },
     setOptions({ xname,yname,title, name, xdata, ydata } = {}) {
+      var right = 0;
+      if (xname == undefined) {
+        right = "2%"
+      } else {
+        right = (xname.length * 2 + 3) + '%';
+      }
       this.chart.setOption({
         // title: {
         //   text: title,
@@ -76,7 +82,7 @@ export default {
         },
         grid: {
           left: 10,
-          right: '15%',
+     right:right ,
           bottom: 20,
           top: 30,
           containLabel: true
