@@ -55,11 +55,17 @@
           </el-table>
         </template>
       </el-table-column>
-      <el-table-column prop="level" label="级别" width="100" sortable>
+      <el-table-column prop="level" label="级别" width="120" sortable>
         <template slot-scope="scope">
           <el-tag type="success" v-if="scope.row['level'] == 0">INFO</el-tag>
           <el-tag type="warning" v-if="scope.row['level'] == 1">WARNING</el-tag>
           <el-tag type="danger" v-if="scope.row['level'] == 2">ERROR</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="ip" label="IP" width="100" >
+        <template slot-scope="scope">
+          <div v-if="scope.row.ip == ''">无</div>
+          <div v-if="scope.row.ip != ''">{{scope.row.ip}}</div>
         </template>
       </el-table-column>
       <el-table-column prop="username" label="操作用户" width="200">
