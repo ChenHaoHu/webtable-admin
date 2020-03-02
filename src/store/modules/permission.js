@@ -141,6 +141,7 @@ const actions = {
        "/wadmin/permission/index":() => import("@/views/wadmin/permission/index"),
        "/wadmin/member/index":() => import("@/views/wadmin/member/index"),
        "/wadmin/share/index":() => import("@/views/wadmin/share/index"),
+       "/wadmin/log/index":() => import("@/views/wadmin/log/index"),
       }
 
       var routerss = store.getters.userRouters;

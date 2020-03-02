@@ -43,3 +43,13 @@ export function deleteshare(data) {
     data
   })
 }
+
+
+
+export function getlogs(data) {
+  return request({
+    url: '',
+    method: 'post',
+    data
+  })
+}

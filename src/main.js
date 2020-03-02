@@ -12,6 +12,11 @@ import App from './App'
 import store from './store'
 import router from './router'
 
+import JsonViewer from 'vue-json-viewer'
+ 
+// Import JsonViewer as a Vue.js plugin
+Vue.use(JsonViewer)
+
 import '@/icons' // icon
 // import '@/permission' // permission control
 
