@@ -38,7 +38,7 @@ module.exports = {
     },
     proxy: {
       "/webtable/api":{
-        target:"http://localhost:9299/webtable",
+        target:"http://localhost:8089/webtable",
         pathRewrite: {"^/webtable/api" : ""}
       }
     },

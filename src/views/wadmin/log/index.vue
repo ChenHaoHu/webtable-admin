@@ -3,7 +3,7 @@
     <div class="sear">
       <el-date-picker v-model="sear.date" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="timestamp" :picker-options="pickerOptions">
       </el-date-picker>
-      <el-select v-model="sear.level" placeholder="请选择日志级别" style="width: 220px;">
+      <el-select v-model="sear.level" placeholder="请选择日志级别" style="width: 200px;">
         <el-option label="INFO" value="0"></el-option>
         <el-option label="WARNING" value="1"></el-option>
         <el-option label="ERROR" value="2"></el-option>
@@ -20,7 +20,7 @@
       <el-table-column type="expand">
         <template slot-scope="scope">
           <el-table :data="scope.row['sqlRecords']" style="width: 100%">
-            <el-table-column prop="sql" label="SQL">
+            <el-table-column prop="sql" label="SQL" >
               <template slot-scope="scope">
                 <el-alert :title="scope.row.sql" type="success" :closable="false">
                 </el-alert>
@@ -62,7 +62,7 @@
           <el-tag type="danger" v-if="scope.row['level'] == 2">ERROR</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="ip" label="IP" width="100" >
+      <el-table-column prop="ip" label="IP" width="120" >
         <template slot-scope="scope">
           <div v-if="scope.row.ip == ''">无</div>
           <div v-if="scope.row.ip != ''">{{scope.row.ip}}</div>

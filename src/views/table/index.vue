@@ -769,6 +769,7 @@ export default {
               data.fields[key]["selectArr"] = newSelects;
             }
             if (data.fields[key]["fieldPermission"].indexOf("update") >= 0) {
+              data.fields[key]['value'] = "";
               updateFields[key] = data.fields[key];
             }
             if (data.fields[key]["fieldPermission"].indexOf("insert") >= 0) {
@@ -782,6 +783,8 @@ export default {
               sortFields.push(key);
             }
           }
+
+
           that.insertFields = insertFields;
           that.updateFields = updateFields;
           that.findFields = findFields;

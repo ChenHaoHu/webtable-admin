@@ -81,6 +81,7 @@ export default {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
       var val = this.chartData;
+      
       var x = val.xdata;
       var y = val.ydata;
       var name = val.name
